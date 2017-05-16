@@ -7,7 +7,7 @@ from datetime import datetime
 import sys, os
 
 class PageBot():
-    user_agent = "User-Agent:Parliament Pager:v2.2.0 (by /u/Zagorath)"
+    user_agent = "User-Agent:Parliament Pager:v2.2.1 (by /u/Zagorath)"
     error_note = "No valid paging order was found in this message, sorry."
 
     def __init__(self):
@@ -132,7 +132,7 @@ class PageBot():
         Adds users from the specified subreddit's "pagelist"
         to the to_page list
         '''
-        s = self.r.get_subreddit(subreddit.replace('r/', '').replace('/', ''))
+        s = self.r.get_subreddit(subreddit.replace('r/', '', 1).replace('/', ''))
         try:
             wiki = s.get_wiki_page("pagelist")
             contents = wiki.content_md.split("\r\n\r\n")
