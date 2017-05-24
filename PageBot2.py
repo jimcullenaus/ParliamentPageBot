@@ -19,13 +19,6 @@ class PageBot():
         #except Exception as e:
         #    print e
 
-        try:
-            s = self.r.subreddit('modelgop')
-            print s.top().next()
-        except exceptions.Forbidden as f:
-            print f
-            return
-
         while True:
             try:
                 self._run()
