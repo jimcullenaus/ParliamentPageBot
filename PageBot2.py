@@ -1,4 +1,5 @@
 import praw
+import prawcore.exceptions as exceptions
 import re
 import math
 import time
@@ -21,7 +22,7 @@ class PageBot():
         try:
             s = self.r.subreddit('modelgop')
             print s.top().next()
-        except prawcore.exceptions.Forbidden as f:
+        except exceptions.Forbidden as f:
             print f
             return
 
@@ -49,12 +50,13 @@ class PageBot():
                 self._page()
             elif self.message.body.startswith('**gadzooks!'):
                 print "Received mod invite"
-                sr = self.r.get_info(thing_id=self.message.subreddit.fullname)
-                try:
-                    sr.accept_moderator_invite()
-                except prawcore.exceptions.InvalidInvite:
-                    print "Mod invite accepting failed"
-                    continue
+                sr = self.message.subreddit # no idea if this works
+                #try:
+                sr.mod.accept_invite()
+                # Commenting out because unsure of how to do this in PRAW 4.
+                #except exceptions.InvalidInvite:
+                #    print "Mod invite accepting failed"
+                #    continue
                 self.r.inbox.mark_read(self.message)
 
             else:
@@ -113,7 +115,7 @@ class PageBot():
 ##            elif item.startswith("/u/") or item.startswith("u/"):
 ##                self.to_page.add(item)
             elif item in here:
-              self._page_subreddit(self.message.subreddit.url)
+              self._page_subreddit(self.message.subreddit)
         print "Paging", self.to_page
         self._do_page()
 
@@ -122,18 +124,19 @@ class PageBot():
         Adds users from the specified subreddit's "pagelist"
         to the to_page list
         '''
-        s = self.r.subreddit(subreddit.replace('r/', '', 1).replace('/', ''))
+        # should be unneccessary in PRAW 4 as subreddit is a Subreddit object.
+        #s = self.r.subreddit(subreddit.replace('r/', '', 1).replace('/', ''))
         try:
-            wiki = s.get_wiki_page("pagelist")
+            wiki = subreddit.wiki["pagelist"]
             contents = wiki.content_md.split("\r\n\r\n")
             for user in contents:
                 self.to_page.add(user)
         # If there is no pagelist page created
-        except prawcore.exceptions.NotFound as e:
+        except exceptions.NotFound as e:
             error_message = "No paging list found at %s/wiki/pagelist" % subreddit
             err_msg = error_message.replace("//", "/")
             self.message.reply(err_msg)
-        except prawcore.exceptions.Forbidden as f:
+        except exceptions.Forbidden as f:
             error_message = "Sorry, I don't have permission to read the wiki page %s/wiki/pagelist. Make sure the bot has permission to read the wiki, possibly by adding it to the modlist with wiki permission." % subreddit
             err_msg = error_message.replace("//", "/")
             print err_msg
