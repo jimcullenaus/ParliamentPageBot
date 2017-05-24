@@ -3,3 +3,4 @@ oauth.ini
 *.out
 fileread.py
 OldPageBot.py
+praw.ini

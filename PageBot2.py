@@ -1,5 +1,4 @@
 import praw
-import OAuth2Util
 import re
 import math
 import time
@@ -7,22 +6,24 @@ from datetime import datetime
 import sys, os
 
 class PageBot():
-    user_agent = "User-Agent:Parliament Pager:v2.2.1 (by /u/Zagorath)"
+    user_agent = "User-Agent:Parliament Pager:v2.3.0 (by /u/Zagorath)"
     error_note = "No valid paging order was found in this message, sorry."
 
     def __init__(self):
-        # Connect and log in to gReddit
-        self.r = praw.Reddit(user_agent = self.user_agent)
-        try:
-            self.o = OAuth2Util.OAuth2Util(self.r, print_log=False)
-            self.o.refresh(force=True)
-        except Exception as e:
-            print e
-        #with open('password.txt', 'r') as f:
-        #    password = f.readline()
-        #self.r.login("ParliamentPageBot", password.strip())
+        # Connect and log in to Reddit
+        self.r = praw.Reddit('PageBot', user_agent=self.user_agent)
+        #try:
+        #    self.o = OAuth2Util.OAuth2Util(self.r, print_log=False)
+        #    self.o.refresh(force=True)
+        #except Exception as e:
+        #    print e
 
-        self.moderators = [m.name for m in self.r.get_subreddit('ModelAustralia').get_moderators()]
+        try:
+            s = self.r.subreddit('modelgop')
+            print s.top().next()
+        except prawcore.exceptions.Forbidden as f:
+            print f
+            return
 
         while True:
             try:
@@ -41,7 +42,7 @@ class PageBot():
                 continue
 
     def _run(self):
-        for self.message in self.r.get_unread():
+        for self.message in self.r.inbox.unread():
             if "+/u/parliamentpagebot" in self.message.body.lower():
                 # pass to page
                 print "\nValid page order received"
@@ -51,14 +52,15 @@ class PageBot():
                 sr = self.r.get_info(thing_id=self.message.subreddit.fullname)
                 try:
                     sr.accept_moderator_invite()
-                except praw.errors.InvalidInvite:
+                except prawcore.exceptions.InvalidInvite:
                     print "Mod invite accepting failed"
                     continue
-                self.message.mark_as_read()
+                self.r.inbox.mark_read(self.message)
+
             else:
                 print "Mentioned but no page order"
                 print self.message.body
-                self.message.mark_as_read()
+                self.r.inbox.mark_read(self.message)
 
     def _page(self):
         '''
@@ -76,7 +78,7 @@ class PageBot():
             print "No page orders received"
             # No valid paging orders were found
             self.reply(self.error_note)
-        self.message.mark_as_read()
+        self.r.inbox.mark_read(self.message)
 
     def _parse_order(self, page_order):
         '''
@@ -107,23 +109,11 @@ class PageBot():
         for item in paging_list:
             print "Item to be paged:", item
             if item.startswith("/r/") or item.startswith("r/"):
-                # Page iff the subreddit is not ModelAustralia,
-                # or if it *is* ModelAustralia but author is an MA mod
-                if not ((item.endswith("ModelAustralia/") or item.endswith("ModelAustralia")) and not
-                        self.message.author.name in self.moderators):
-                    self._page_subreddit(item)
-                else:
-                    self.reply("Sorry, but you do not have permission to page the master list.")
-                    return
+              self._page_subreddit(item)
 ##            elif item.startswith("/u/") or item.startswith("u/"):
 ##                self.to_page.add(item)
             elif item in here:
-                if not (self.message.subreddit == self.r.get_subreddit('ModelAustralia') and not
-                        self.message.author.name in self.moderators):
-                    self._page_subreddit(self.message.subreddit.url)
-                else:
-                    self.reply("Sorry, but you do not have permission to page the master list.")
-                    return
+              self._page_subreddit(self.message.subreddit.url)
         print "Paging", self.to_page
         self._do_page()
 
@@ -132,18 +122,18 @@ class PageBot():
         Adds users from the specified subreddit's "pagelist"
         to the to_page list
         '''
-        s = self.r.get_subreddit(subreddit.replace('r/', '', 1).replace('/', ''))
+        s = self.r.subreddit(subreddit.replace('r/', '', 1).replace('/', ''))
         try:
             wiki = s.get_wiki_page("pagelist")
             contents = wiki.content_md.split("\r\n\r\n")
             for user in contents:
                 self.to_page.add(user)
         # If there is no pagelist page created
-        except praw.errors.NotFound as e:
+        except prawcore.exceptions.NotFound as e:
             error_message = "No paging list found at %s/wiki/pagelist" % subreddit
             err_msg = error_message.replace("//", "/")
             self.message.reply(err_msg)
-        except praw.errors.Forbidden as f:
+        except prawcore.exceptions.Forbidden as f:
             error_message = "Sorry, I don't have permission to read the wiki page %s/wiki/pagelist. Make sure the bot has permission to read the wiki, possibly by adding it to the modlist with wiki permission." % subreddit
             err_msg = error_message.replace("//", "/")
             print err_msg
