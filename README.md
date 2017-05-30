@@ -16,6 +16,22 @@
 
 ## How to run your own
 
-You are required to install PRAW and OAuth2Util, and set up a Reddit bot account that is authorisd using OAuth. Follow the instructions on the PRAW website for how to install PRAW on your system, and on GitHub at SmBe19/praw-OAuth2Util for how to install OAuth2Util and authorise it with your bot's Reddit account.
+1. Install PRAW 4 or later. [See the PRAW website for instructions](https://praw.readthedocs.io/en/latest/getting_started/installation.html).
 
-Once the prerequisites are installed, it is as simple as running the Python script and leaving it running. Replace "/u/ParliamentPageBot" with the name of the bot account you have authorised in all commands.
+2. Created a Reddit authorised app [here](https://www.reddit.com/prefs/apps/)
+
+3. Give the bot a name of your choosing, set its type to "script", leave the about url blank. Add a description if you want, and set the redirect uri to http://localhost:8080.
+
+4. Make a note of the client\_id, which is the number found under the words "personal use script", under the name of your bot, once you have created the app. Also note your secret.
+
+5. Create a `praw.ini` file in the same directory as this application, formatted as shown at the end of this file.
+
+6. Run the script and leave it running. Exit using ^c or by closing the Python instance.
+
+
+
+    [PageBot]
+    username: <username>
+    password: <password>
+    client_id: <client_id>
+    client_secret: <secret>

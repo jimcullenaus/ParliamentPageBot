@@ -7,7 +7,7 @@ import re, math, logging, time
 import sys, os, traceback
 
 class PageBot():
-	user_agent = "User-Agent:Parliament Pager:v2.3.0 (by /u/Zagorath)"
+	user_agent = "User-Agent:Parliament Pager:v2.3.1 (by /u/Zagorath)"
 
 	def __init__(self):
 		self.r = praw.Reddit('PageBot', user_agent=self.user_agent)
@@ -16,6 +16,7 @@ class PageBot():
 			level=logging.WARNING,
 			format='%(asctime)s - %(levelname)s - %(message)s'
 		)
+		self.me = self.r.user.me().name
 
 		while True:
 			try:
@@ -52,11 +53,11 @@ class PageBot():
 			# If the message is a comment
 			elif isinstance(self.message, Comment):
 				# If it mentions this bot and prefixes it with +
-				if "+/u/parliamentpagebot" in self.message.body.lower():
+				if "+/u/{}".format(self.me).lower() in self.message.body.lower():
 					self._log(logging.INFO, "Valid page order received")
 					self.page()
 				# If it's a comment that mentions but doesn't prefix with +
-				elif "u/parliamentpagebot" in self.message.body.lower():
+				elif "u/{}".format(self.me).lower() in self.message.body.lower():
 					self._log(logging.INFO, "Bot mentioned, no page order")
 				# If it's a comment reply
 				else:
@@ -80,13 +81,13 @@ class PageBot():
 
 	def page(self):
 		"""From the current self.message, parse out the page order
-		(demarked by "+/u/ParliamentPageBot")
+		(demarked by "+/u/ParliamentPageBot" in this bot's main incarnation)
 		and page each of the users represented by the message.
 		"""
 		self._log(logging.DEBUG, "Comment with body '{}' of type '{}'".format(
 			self.message.body, type(self.message.body)))
 		page_orders = re.split(
-			"\+\/u\/parliamentpagebot",
+			"\+\/u\/{}".format(self.me),
 			self.message.body,
 			flags=re.IGNORECASE
 		)
