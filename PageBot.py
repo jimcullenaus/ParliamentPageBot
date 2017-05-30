@@ -13,7 +13,7 @@ class PageBot():
 		self.r = praw.Reddit('PageBot', user_agent=self.user_agent)
 		logging.basicConfig(
 			filename='pagebot.log',
-			level=logging.WARNING,
+			level=logging.INFO,
 			format='%(asctime)s - %(levelname)s - %(message)s'
 		)
 		self.me = self.r.user.me().name
