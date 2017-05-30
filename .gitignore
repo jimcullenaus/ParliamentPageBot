@@ -4,3 +4,4 @@ oauth.ini
 fileread.py
 OldPageBot.py
 praw.ini
+pagebot.log
