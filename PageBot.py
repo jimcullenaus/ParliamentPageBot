@@ -22,6 +22,10 @@ class PageBot():
 			try:
 				self.run()
 				time.sleep(30)
+			except RequestException as f:
+				logging.warning("Failed to connect or other RequestException, "
+						"outside of writing.")
+				time.sleep(30)
 			except Exception as e:
 				# If there's an error that isn't otherwise caught
 				# Make sure it is logged.
@@ -220,12 +224,13 @@ class PageBot():
 				self.message.reply(message)
 				success = True
 			except RequestException as e:
-				logging.warning("Failed to connect or other RequestException.")
+				logging.warning("Failed to connect or other RequestException, "
+						"while writing.")
 				time.sleep(minutes * 60)
 				minutes *= 2
 				if minutes > 32:
 					self._log(
-						logging.CRITICAL,
+						logging.ERROR,
 						"Have tried for over an hour to reply to message"
 					)
 					return
