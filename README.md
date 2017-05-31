@@ -26,7 +26,7 @@
 
 5. Create a `praw.ini` file in the same directory as this application, formatted as shown at the end of this file.
 
-6. Run the script and leave it running. Exit using '^c' or by closing the Python instance.
+6. Run the script and leave it running. Exit using `^c` or by closing the Python instance.
 
 
 ```ini
