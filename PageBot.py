@@ -4,10 +4,10 @@ from prawcore.exceptions import RequestException, NotFound, Forbidden
 from praw.models import Comment, Message
 
 import re, math, logging, time
-import sys, os, traceback
+import sys, os, traceback, signal
 
 class PageBot():
-	user_agent = "User-Agent:Parliament Pager:v2.3.1 (by /u/Zagorath)"
+	user_agent = "User-Agent:Parliament Pager:v2.3.2 (by /u/Zagorath)"
 
 	def __init__(self):
 		self.r = praw.Reddit('PageBot', user_agent=self.user_agent)
@@ -19,6 +19,8 @@ class PageBot():
 		self.me = self.r.user.me().name
 
 		while True:
+			#if exiting:
+			#	sys.exit(0)
 			try:
 				self.run()
 				time.sleep(30)
@@ -69,7 +71,7 @@ class PageBot():
 					stopped = False
 					# If indicates user wants to be removed from paging list contact mods.
 					for word in stop_messages:
-						if self.message.body.contains(word):
+						if word in self.message.body:
 							unsub = ("This bot replies to all users on the subreddit's "
 							      "paging list. Contact mods of the subreddit "
 							      "being paged if you wish to be removed from the list.")
@@ -251,7 +253,14 @@ class PageBot():
 			self.message.id)
 		logging.log(level, message)
 
+#def signal_handler(signal, frame):
+#	exiting = True
+#	logging.warning("SIGINT detected, exiting gracefully.")
+#	print "SIGINT detected, exiting gracefully."
+
 ##############################################################
+#exiting = False
 
 if __name__ == '__main__':
+	#signal.signal(signal.SIGINT, signal_handler)
 	PageBot()
