@@ -10,6 +10,8 @@ class PageBot():
 	user_agent = "User-Agent:Parliament Pager:v2.3.2 (by /u/Zagorath)"
 
 	def __init__(self):
+		reload(sys)
+		sys.setdefaultencoding('utf-8')
 		self.r = praw.Reddit('PageBot', user_agent=self.user_agent)
 		logging.basicConfig(
 			filename='pagebot.log',
@@ -90,13 +92,18 @@ class PageBot():
 		(demarked by "+/u/ParliamentPageBot" in this bot's main incarnation)
 		and page each of the users represented by the message.
 		"""
-		self._log(logging.DEBUG, "Comment with body '{}' of type '{}'".format(
-			self.message.body, type(self.message.body)))
-		page_orders = re.split(
-			"\+\/u\/{}".format(self.me),
-			self.message.body,
-			flags=re.IGNORECASE
-		)
+		try:
+			self._log(logging.DEBUG, "Comment with body '{}' of type '{}'".format(
+				self.message.body, type(self.message.body)))
+			page_orders = re.split(
+				"\+\/u\/{}".format(self.me),
+				self.message.body,
+				flags=re.IGNORECASE
+			)
+		except UnicodeEncodeError as e:
+			logging.ERROR('Problem parsing the message because of Unicode.')
+			self.message.mark_read()
+			return
 		logging.debug("page_orders are '{}' of type '{}'".format(
 			page_orders, type(page_orders)))
 		# If exactly one page order is found
